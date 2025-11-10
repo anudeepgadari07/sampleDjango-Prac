@@ -16,10 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from basic.views import greet
-from basic.views import sample
-from basic.views import sampleInfo
-from basic.views import calculate
+from basic.views import greet,sample,sampleInfo,calculate,connect,addStudent
+
 
 
 
@@ -29,4 +27,6 @@ urlpatterns = [
     path('wlcStr/',sample),
     path('dict/',sampleInfo),
     path('calc/<str:operation>/<int:num1>/<int:num2>/', calculate),
+    path('connect/',connect),
+    path('add/',addStudent),
 ]
