@@ -28,5 +28,5 @@ urlpatterns = [
     path('dict/',sampleInfo),
     path('calc/<str:operation>/<int:num1>/<int:num2>/', calculate),
     path('connect/',connect),
-    path('add/',addStudent),
+    path('student/',addStudent),
 ]
