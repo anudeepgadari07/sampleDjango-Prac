@@ -44,7 +44,6 @@ def addStudent(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-
             name  = data.get('Name')
             age   = data.get('Age')
             email = data.get('Email')
@@ -63,13 +62,36 @@ def addStudent(request):
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
+
     elif request.method == "GET":
         try:
+            data = json.loads(request.body)
+            if "id" in data:
+                ref_id = data.get("id")#getting id
+                specific_record = students.objects.filter(id = ref_id).values().first()
+                return JsonResponse({"status":"OK","record":specific_record},status = 200)
+            elif "min_age" in data:
+                min_age = data.get("min_age")#getting age
+                under_age = list(students.objects.filter(Age__gte = min_age).values())
+                return JsonResponse({"status":"ok","under_age":under_age},status = 200)
+            elif "max_age" in data:
+                max_age = data.get("max_age")#grtting age from body
+                max_ages = list(students.objects.filter(Age__lte = max_age).values())
+                return JsonResponse({"status":"OK","max_age":max_ages},status = 200) 
+
+        except Exception as e:
+            print("error",e)
+
+        
+        try:
             getDetails = list(students.objects.values())
-            print(getDetails)
+            # print(getDetails)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
         return JsonResponse({"status":"OK","Data":getDetails},status = 200)
+
+
+
 
     elif request.method == "PUT":
         data = json.loads(request.body)
@@ -91,6 +113,9 @@ def addStudent(request):
         return JsonResponse({"status":"deleted data successfully","deleted data":get_deleted_data},status = 200)
 
     return JsonResponse({"error": "Use POST Method only"}, status=405)
+        
+
+
 
 
 # post name
