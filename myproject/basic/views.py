@@ -112,13 +112,11 @@ def addStudent(request):
         to_delete.delete()
         return JsonResponse({"status":"deleted data successfully","deleted data":get_deleted_data},status = 200)
 
-    return JsonResponse({"error": "Use POST Method only"}, status=405)
-        
+    return JsonResponse({"error": "Use POST Method only"}, status=405)        
 
 
+def job1(request):
+    return JsonResponse({"message":"you haave successfully applied for job1."},status=200)
 
-
-# post name
-# post type
-# post description
-# post date
+def job2(request):
+    return JsonResponse({"message":"you have successfully applied for job2."})
