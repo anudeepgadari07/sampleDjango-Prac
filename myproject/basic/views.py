@@ -3,7 +3,7 @@ from django.http import HttpResponse, JsonResponse
 from django.db import connection
 import json
 from django.views.decorators.csrf import csrf_exempt
-from basic.models import students  # Model imported
+from basic.models import students,users
 
 def greet(request):
     return HttpResponse('Hello World')
@@ -120,3 +120,38 @@ def job1(request):
 
 def job2(request):
     return JsonResponse({"message":"you have successfully applied for job2."})
+
+
+@csrf_exempt
+def signup(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        print(data)
+        insert = users.objects.create(
+            username = data.get("username"),
+            email = data.get("email"),
+            password = data.get("password")
+        )
+        return JsonResponse({"data":"success"},status = 200)
+
+    elif request.method == "GET":
+        try:
+            data = json.loads(request.body)
+            # print(data)
+            if "id" in data:
+                ref_id = data.get("id")
+                specific_record = users.objects.filter(id = ref_id).values().first() #gets specific record from id
+                return JsonResponse({"status":"OK","record":specific_record},status = 200)
+        except Exception as e:
+            print(e)
+            return JsonResponse({"error":"not found"},status = 400)
+
+
+
+    elif request.method == "DELETE":
+        data = json.loads(request.body)
+        ref_id = data.get("id")
+        get_deleted_data = users.objects.filter(id = ref_id).values().first()
+        to_delete = users.objects.get(id = ref_id)
+        to_delete.delete()
+        return JsonResponse({"status":"success","deleted data":get_deleted_data},status = 200)
