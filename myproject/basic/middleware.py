@@ -2,8 +2,8 @@ from django.http import JsonResponse
 import re
 import json
 from django.http import HttpResponse
-from django.contrib.auth import get_user_model
-User = get_user_model()
+from basic.models import users
+
 
 
 
@@ -96,8 +96,12 @@ class emailMiddleWare:
                 if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", email):
                     return JsonResponse({"error":"should match the email pattern."},status = 400)
 
-                if User.objects.filter(email=email).exists():
-                    return JsonResponse({"error": "email already exists"},status=400)
+                try:
+                    if users.objects.filter(email=email).exists():
+                        return JsonResponse({"error": "email already exists"},status=400)
+                except Exception as e:
+                    print(e)
+                    return JsonResponse({"error":"error"},status = 400)
             except Exception as e:
                 print("error",e)
         return self.get_response(request)
