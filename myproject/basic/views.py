@@ -3,7 +3,7 @@ from django.http import HttpResponse, JsonResponse
 from django.db import connection
 import json
 from django.views.decorators.csrf import csrf_exempt
-from basic.models import students,users
+from basic.models import students,users,movieData
 
 def greet(request):
     return HttpResponse('Hello World')
@@ -155,3 +155,84 @@ def signup(request):
         to_delete = users.objects.get(id = ref_id)
         to_delete.delete()
         return JsonResponse({"status":"success","deleted data":get_deleted_data},status = 200)
+
+
+
+@csrf_exempt
+def movieDatainfo(request):
+    if request.method == "GET":
+        try:
+            movie_id = request.GET.get("id")  # read from URL query params
+            if movie_id:   # if id is passed
+                record = movieData.objects.filter(id=movie_id).values().first()
+            
+                if record:
+                    return JsonResponse({"status": "OK", "record": record}, status=200)
+                else:
+                    return JsonResponse({"status": "NOT FOUND", "message": "Invalid ID"}, status=404)
+        
+            else:
+            # return all records
+                all_data = list(movieData.objects.values())
+                return JsonResponse({"status": "OK", "data": all_data}, status=200)
+
+        except Exception as e:
+            print("error", e)
+            return JsonResponse({"error": "Failed"}, status=400)
+    
+    elif request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            infodata = movieData.objects.create(
+                MovieName = data.get("MovieName"),
+                ReleaseDate = data.get("ReleaseDate"),
+                Budget = data.get("Budget"),
+                Rating = data.get("Rating")
+            )
+            return JsonResponse({"status": "success", "id": infodata.id}, status=201)
+        except Exception as e:
+            print("error",e)
+            return JsonResponse({"error":"faild to post data"},status = 400)
+
+    elif request.method == "PUT":
+        try:
+            data = json.loads(request.body)
+            movie_id = data.get("id")
+
+            if not movie_id:
+                return JsonResponse({"error": "ID is required for update"}, status=400)
+
+            try:
+                movie = movieData.objects.get(id=movie_id)
+            except movieData.DoesNotExist:
+                return JsonResponse({"error": "Record not found"}, status=404)
+
+        # Update fields only if provided
+            movie.MovieName = data.get("MovieName", movie.MovieName)
+            movie.ReleaseDate = data.get("ReleaseDate", movie.ReleaseDate)
+            movie.Budget = data.get("Budget", movie.Budget)
+            movie.Rating = data.get("Rating", movie.Rating)
+        
+            movie.save()
+
+            return JsonResponse({"status": "updated", "id": movie.id}, status=200)
+
+        except Exception as e:
+            print("PUT error:", e)
+            return JsonResponse({"error": "Failed to update"}, status=400)
+
+    elif request.method == "DELETE":
+        try:
+            data = json.loads(request.body)
+            ref_id = data.get("id")
+            get_deleted_data = movieData.objects.filter(id = ref_id).values().first()
+            to_delete = movieData.objects.get(id = ref_id)
+            to_delete.delete()
+            return JsonResponse({"status":"deleted data successfully","deleted data":get_deleted_data},status = 200)
+        except Exception as e:
+            return JsonResponse({"error":"failed to delete data"},status = 400)
+
+    
+
+
+
