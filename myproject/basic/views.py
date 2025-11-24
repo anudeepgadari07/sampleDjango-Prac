@@ -4,6 +4,7 @@ from django.db import connection
 import json
 from django.views.decorators.csrf import csrf_exempt
 from basic.models import students,users,movieData
+# from django.http import QueryDict
 
 def greet(request):
     return HttpResponse('Hello World')
@@ -165,12 +166,10 @@ def movieDatainfo(request):
             movie_id = request.GET.get("id")  # read from URL query params
             if movie_id:   # if id is passed
                 record = movieData.objects.filter(id=movie_id).values().first()
-            
                 if record:
                     return JsonResponse({"status": "OK", "record": record}, status=200)
                 else:
                     return JsonResponse({"status": "NOT FOUND", "message": "Invalid ID"}, status=404)
-        
             else:
             # return all records
                 all_data = list(movieData.objects.values())
@@ -179,10 +178,21 @@ def movieDatainfo(request):
         except Exception as e:
             print("error", e)
             return JsonResponse({"error": "Failed"}, status=400)
+        
+        # try:
+        #     rating = request.GET.get("Rating")
+        #     record = movieData.objects.filter(Rating=rating).values().first()
+        #     if int(record) > 8:
+        #         print(record)
+        #         return JsonResponse({"status":"sucess","movies":record},status = 200)
+        # except Exception as e:
+        #     return JsonResponse({"error":"faild to get"},status = 400)
+
     
     elif request.method == "POST":
         try:
-            data = json.loads(request.body)
+            # data = json.loads(request.body)
+            data = request.POST
             infodata = movieData.objects.create(
                 MovieName = data.get("MovieName"),
                 ReleaseDate = data.get("ReleaseDate"),
@@ -197,6 +207,9 @@ def movieDatainfo(request):
     elif request.method == "PUT":
         try:
             data = json.loads(request.body)
+            # data = request.POST
+            # data = QueryDict(request.body)
+
             movie_id = data.get("id")
 
             if not movie_id:
@@ -233,6 +246,6 @@ def movieDatainfo(request):
             return JsonResponse({"error":"failed to delete data"},status = 400)
 
     
-
+    
 
 

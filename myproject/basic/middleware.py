@@ -125,3 +125,19 @@ class passwordMiddleWare:
                                         "one uppercase letter, one lowercase letter, "
                                         "one number, and one special character (@$!%*?&)"},status=400)
         return self.get_response(request)
+
+
+
+class movieMiddleware:
+    def __init__(self,get_response):
+        self.get_response = get_response
+    def __call__(self,request):
+        if request.path == "/movieData/":
+            # print("movie api called")
+            incoming_data = request.POST
+            # print("incoming data",incoming_data)
+        return self.get_response(request)
+
+
+# rating more than 4
+# budget more than 25cr
