@@ -164,12 +164,30 @@ def movieDatainfo(request):
     if request.method == "GET":
         try:
             movie_id = request.GET.get("id")  # read from URL query params
+            rating = request.GET.get("Rating")
+            budget = request.GET.get("Budget")
             if movie_id:   # if id is passed
                 record = movieData.objects.filter(id=movie_id).values().first()
                 if record:
                     return JsonResponse({"status": "OK", "record": record}, status=200)
                 else:
                     return JsonResponse({"status": "NOT FOUND", "message": "Invalid ID"}, status=404)
+            elif rating:
+                rating = float(rating)
+                record = list(movieData.objects.filter(Rating__gt=rating).values())
+                # print(record)
+                return JsonResponse({"status":"success",f"Rating grater than {rating}":record},status = 200)
+            elif budget:
+                budget = int(budget[:-2])
+                record = movieData.objects.all().values()
+                records = []
+                # print(budget)
+                for item in record:
+                    db_budget = item["Budget"]
+                    db_budget = int(db_budget[:-2])
+                    if db_budget > budget:
+                        records.append(item)
+                return JsonResponse({"status":"success",f"budget grater than {budget}cr":records},status = 200)
             else:
             # return all records
                 all_data = list(movieData.objects.values())
@@ -179,15 +197,8 @@ def movieDatainfo(request):
             print("error", e)
             return JsonResponse({"error": "Failed"}, status=400)
         
-        # try:
-        #     rating = request.GET.get("Rating")
-        #     record = movieData.objects.filter(Rating=rating).values().first()
-        #     if int(record) > 8:
-        #         print(record)
-        #         return JsonResponse({"status":"sucess","movies":record},status = 200)
-        # except Exception as e:
-        #     return JsonResponse({"error":"faild to get"},status = 400)
-
+        
+    
     
     elif request.method == "POST":
         try:
