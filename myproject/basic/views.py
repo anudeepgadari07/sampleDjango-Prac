@@ -5,6 +5,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from basic.models import students,users,movieData
 # from django.http import QueryDict
+from django.contrib.auth.hashers import make_password,check_password
 
 def greet(request):
     return HttpResponse('Hello World')
@@ -127,13 +128,14 @@ def job2(request):
 def signup(request):
     if request.method == "POST":
         data = json.loads(request.body)
-        print(data)
+        # print(data)
         insert = users.objects.create(
             username = data.get("username"),
             email = data.get("email"),
-            password = data.get("password")
+            password = make_password(data.get("password"))
         )
-        return JsonResponse({"data":"success"},status = 200)
+        return JsonResponse({"data":"successfully created"},status = 200)
+
 
     elif request.method == "GET":
         try:
@@ -147,6 +149,31 @@ def signup(request):
             print(e)
             return JsonResponse({"error":"not found"},status = 400)
 
+    elif request.method == "PUT":
+        data = json.loads(request.body)
+        ref_id = data.get("id")
+        # print(ref_id)
+        try:
+            if not ref_id:
+                return JsonResponse({"message":"Id is required for an update"},status = 200)
+            try:
+                user = users.objects.get(id=ref_id)
+            except Exception as e:
+                print("error",e)
+                return JsonResponse({"error": "Record not found"}, status=400)
+            try:
+                user.username = data.get("username",user.username)
+                user.email = data.get("email",user.email)
+                user.password = make_password(data.get("password",user.password))
+                user.save()
+                return JsonResponse({"status":"updated",f"updated values":data},status = 200)
+            except Exception as e:
+                return JsonResponse({"status":"failed to update"},status = 400)
+            
+
+        except Exception as e:
+            return JsonResponse({"error":f"user not found {ref_id}"},status = 200)
+
 
 
     elif request.method == "DELETE":
@@ -156,6 +183,24 @@ def signup(request):
         to_delete = users.objects.get(id = ref_id)
         to_delete.delete()
         return JsonResponse({"status":"success","deleted data":get_deleted_data},status = 200)
+
+@csrf_exempt
+def login(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        # print(data)
+        username = data.get("username")
+        password = data.get("password")
+        try:
+            user = users.objects.get(username=username)
+            if check_password(password,user.password):
+                return JsonResponse({"status":"logged in successfully"},status = 200)
+            else:
+                return JsonResponse({"status":"make sure your password is correct"},status = 400)
+        except Exception as e:
+            print("error",e)
+            return JsonResponse({"status":"user not found"},status = 400)
+
 
 
 
