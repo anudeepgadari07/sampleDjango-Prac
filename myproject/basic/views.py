@@ -8,6 +8,8 @@ from basic.models import students,users,movieData
 from django.contrib.auth.hashers import make_password,check_password
 import jwt
 from django.conf import settings
+from datetime import datetime,timedelta
+from zoneinfo import ZoneInfo
 
 def greet(request):
     return HttpResponse('Hello World')
@@ -195,11 +197,13 @@ def login(request):
         password = data.get("password")
         try:
             user = users.objects.get(username=username)
+            issued_time=datetime.now(ZoneInfo("Asia/Kolkata"))
+            expired_time=issued_time+timedelta(minutes=25)
             if check_password(password,user.password):
                 # token = "a json web token"
-                payload = {"username":username,"email":user.email}
+                payload = {"username":username,"email":user.email,"exp":expired_time}
                 token = jwt.encode(payload,settings.SECRET_KEY,algorithm='HS256')
-                return JsonResponse({"status":"logged in successfully","token":token},status = 200)
+                return JsonResponse({"status":"logged in successfully","token":token,"issued_at":issued_time,"expired at":expired_time,"expiring in":int((expired_time-issued_time).total_seconds()/60)},status = 200)
             else:
                 return JsonResponse({"status":"make sure your password is correct"},status = 400)
         except Exception as e:
