@@ -6,6 +6,8 @@ from django.views.decorators.csrf import csrf_exempt
 from basic.models import students,users,movieData
 # from django.http import QueryDict
 from django.contrib.auth.hashers import make_password,check_password
+import jwt
+from django.conf import settings
 
 def greet(request):
     return HttpResponse('Hello World')
@@ -194,7 +196,10 @@ def login(request):
         try:
             user = users.objects.get(username=username)
             if check_password(password,user.password):
-                return JsonResponse({"status":"logged in successfully"},status = 200)
+                # token = "a json web token"
+                payload = {"username":username,"email":user.email}
+                token = jwt.encode(payload,settings.SECRET_KEY,algorithm='HS256')
+                return JsonResponse({"status":"logged in successfully","token":token},status = 200)
             else:
                 return JsonResponse({"status":"make sure your password is correct"},status = 400)
         except Exception as e:
