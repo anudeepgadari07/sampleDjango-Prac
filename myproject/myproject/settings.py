@@ -56,7 +56,8 @@ MIDDLEWARE = [
     'basic.middleware.usernameMiddleware',
     'basic.middleware.emailMiddleWare',
     'basic.middleware.passwordMiddleWare',
-    'basic.middleware.movieMiddleware'
+    'basic.middleware.movieMiddleware',
+    'basic.middleware.authenticate_middleware',
 ]
 
 ROOT_URLCONF = 'myproject.urls'

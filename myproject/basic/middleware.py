@@ -3,6 +3,9 @@ import re
 import json
 from django.http import HttpResponse
 from basic.models import users
+import jwt
+from django.conf import settings
+
 
 
 
@@ -139,5 +142,24 @@ class movieMiddleware:
         return self.get_response(request)
 
 
-# rating more than 4
-# budget more than 25cr
+class authenticate_middleware():
+    def __init__(self,get_response):
+        self.get_response=get_response
+    def __call__(self,request):
+        if request.path=="/getData/":
+            token=request.headers.get("Authorization")
+            print(token,"token") #prints bearer <token>
+            if not token:
+                return JsonResponse({"error":"Authorization token missing"},status=401) 
+            token_value=token.split(" ")[1]
+            print(token_value,"token_value") 
+            try:
+                decoded_data=jwt.decode(token_value,settings.SECRET_KEY,algorithms=["HS256"])
+                print(decoded_data,"decoded_data")               
+                request.token_data=decoded_data               
+            except jwt.ExpiredSignatureError:
+                return JsonResponse({"error":"token has expired, please login again"},status=401) 
+            except jwt.exceptions.InvalidSignatureError:
+                return JsonResponse({"error":"invalid token signature"},status=401)    
+
+        return self.get_response(request)

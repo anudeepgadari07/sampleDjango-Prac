@@ -211,7 +211,19 @@ def login(request):
             return JsonResponse({"status":"user not found"},status = 400)
 
 
-
+@csrf_exempt
+def getAllUsers(request):
+    if request.method=="GET":
+        getusers=list(users.objects.values())
+        # print(request.token_data,"token_data in view")
+        print(request.token_data.get("username"),"username from token")
+        # print(users,"users list")
+        for getuser in getusers:
+            print(getuser["username"],"username from users list")
+            if  getuser["username"] == request.token_data.get("username"):
+                return JsonResponse({"status":"success","loggedin_user":request.token_data,"data":getusers},status=200)
+        else:   
+                return JsonResponse({"error":"unauthorized access"},status=401)
 
 @csrf_exempt
 def movieDatainfo(request):
